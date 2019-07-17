@@ -1,41 +1,39 @@
-library(plyr)
-library(tidyverse)
-library(tidyr)
-library(dplyr)
-library(purrr)
-library(stringr)
+# install/ load packages
+if (!require(plyr, quietly=TRUE)) {
+  install.packages("plyr")
+  library(plyr)
+}
+if (!require(tidyverse, quietly=TRUE)) {
+  install.packages("tidyverse")
+  library(tidyverse)
+}
+if (!require(tidyr, quietly=TRUE)) {
+  install.packages("tidyr")
+  library(tidyr)
+}
+if (!require(dplyr, quietly=TRUE)) {
+  install.packages("dplyr")
+  library(dplyr)
+}
+if (!require(purrr, quietly=TRUE)) {
+  install.packages("purrr")
+  library(purrr)
+}
+if (!require(stringr, quietly=TRUE)) {
+  install.packages("stringr")
+  library(stringr)
+}
+if (!require(openxlsx, quietly=TRUE)) {
+    install.packages("openxlsx")
+    library(openxlsx)
+}
+  
+if (!require(readxl, quietly=TRUE)) {
+      install.packages("readxl")
+      library(readxl)
+}
 
-#if (!require(plyr, quietly=TRUE)) {
-#  install.packages("plyr")
-#  library(plyr)
-#}
-
-#if (!require(tidyverse, quietly=TRUE)) {
-#  install.packages("tidyverse")
-#  library(tidyverse)
-#}
-
-#if (!require(tidyr, quietly=TRUE)) {
-#  install.packages("tidyr")
-#  library(tidyr)
-#}
-
-#if (!require(dplyr, quietly=TRUE)) {
-#  install.packages("dplyr")
-#  library(dplyr)
-#}
-#if (!require(purrr, quietly=TRUE)) {
-#  install.packages("purrr")
-#  library(purrr)
-#}
-#if (!require(stringr, quietly=TRUE)) {
-#  install.packages("stringr")
-#  library(stringr)
-#}
-
-library(openxlsx)
-library(readxl)
-
+# create excel workbook
 wb <- openxlsx::createWorkbook()
 
 dir <- file.path("C:/Users/stanfordk/Documents/NSCF_work/Sizanani-Analysis/")
@@ -105,20 +103,12 @@ for (inFile in in_files){
     print(pos)
     #}
     # Genotypic frequencies
-    #str_match("SHP", test2$xxxxPosition)
-    #grep("SHP", test2$xxxxPosition)
-    #total_num <- length(test2$`5:140631730`)
-    total_num <- plyr::count(test2[,pos]) #`5:140631730`)
-    #total_num <- length(test2$`5:140631730`)
+    total_num <- plyr::count(test2[,pos])
     names(total_num) <- c("Genotype", "Frequency")
     total_num$Ratio <- round(total_num$Frequency/sum(total_num$Frequency), 3)
     total_num$Percent <- round(total_num$Ratio * 100, 1)
     total_num$Position <- rep(pos, nrow(total_num))
     
-    #names(total_num)[2] <- "frequency"
-    #str_match(homo, test2$`5:140631730`)
-    #indiv_num <- sum(as.numeric(str_detect(test2$`5:140631730`, homo)))
-
     # allelic frequencies
     wildtype <- test[, pos][2] #test$`5:140631730`[2]
     mutant <- test[, pos][3] #test$`5:140631730`[3]
@@ -178,9 +168,9 @@ for (inFile in in_files){
     allelic$AlleleType <- names(c(ref=wildtype, mut=mutant))
     allelic <- allelic %>% select(Position, AlleleType, 1:4)
     #sum(allelic$A.Frequency)
-    # capture all the genotypic freqs in a list
+    # get all the genotypic freqs in a list
     cmb_genotype_freq[[pos]] <- total_num
-    # capture all the allelic freqs for each position in a list
+    # get all the allelic freqs for each position in a list
     cmb_allele_freq[[pos]] <- allelic
 
     #}
@@ -193,7 +183,6 @@ for (inFile in in_files){
     fisher_run2 <- spread(fisher_run, pos, freq)
     rownames(fisher_run2) <- fisher_run2$Group
     fisher_run2$Group <- NULL
-    #contigency_table <- fisher_run2[fisher_run2$Group %in% c("EC", "HVL"),]
     
     fisher_alleles <- full_data[,c("Group", pos)] %>% separate(pos, c("ref", "mut"), ref_len) %>% 
       gather(key = "type", value = "alleles", -Group) %>%
@@ -215,17 +204,14 @@ for (inFile in in_files){
     for (nm in 1:length(nam)){
       first_var <- nam[nm]
       
-      #first_var <- "EC"
-      #nam2[cmp] <- "HVL"
-      
       for (cmp in 1:length(nam2)){
         if(identical(first_var, nam2[cmp])){
           drop_value <- nam2[cmp]
           #nam2 <- nam2[! nam2 %in% drop_value]
           next
         }
+        
         # get names of groups being compared
-        #sam_comp <- str_glue(first_var, nam2[cmp], sep="_")
         sam_comp <- paste(first_var, nam2[cmp], sep="_vs_")
         
         # allele analysis
@@ -238,7 +224,6 @@ for (inFile in in_files){
                                                                        Allele = colnames(allele_mat)))
         # change order of alleles to begin with mutant
         allele_mat2 <- allele_mat2[,c(mutant, wildtype)]
-        
         
         
         allele_mat2[is.na(allele_mat2)] <- 0
@@ -258,7 +243,6 @@ for (inFile in in_files){
         
         # select the groups to compare
         # genotype analysis
-        
         contigency_table <- fisher_run2[rownames(fisher_run2) %in% c(first_var, nam2[cmp]),]
         mat <- data.matrix(contigency_table, rownames.force = NA)
         mat[is.na(mat)] <- 0
@@ -296,7 +280,6 @@ for (inFile in in_files){
                                 CI_min = round(homo_m$conf.int[1],4),
                                 CI_max = round(homo_m$conf.int[2],4))
           
-          #results_list <- list(pos = hets_df, pos = homo_df)
           # add homo_df to the list
           homo_mutatnt_results_list[[pos_comp]] <- homo_df
           
@@ -314,10 +297,7 @@ for (inFile in in_files){
   genotypic_cmb$Position <- str_replace(genotypic_cmb$Position, "\\.",":")
   rownames(genotypic_cmb) <- NULL
   
-  #genotypic_cmb$GenotypeGroup <- names(c(ref_homo=ref_homo, ref_het=ref_het, mut_homo=mut_homo))
-  
   genotypic_cmb <- dplyr::arrange(genotypic_cmb, desc(GenotypeGroup))
-  #genotypic_cmb <- dplyr::select(genotypic_cmb, Position, GenotypeGroup, 2:4)
   
   #cmb_allele_freq
   #do.call(rbind, cmb_allele_freq)
@@ -366,10 +346,4 @@ saveWorkbook(wb, "Gene_frequencies.xlsx", overwrite = T)
 
 
 ##################################################################################################
-#names(genotypic_homo_fisher)
-#genotypic_homo_fisher[, sort(genotypic_homo_fisher$Comparison, decreasing = F)
-#cat(dat$P[i],dat$C[i],round(c(tes$p.value,tes$estimate,tes$conf.int),3),"\n",sep="\t")
 
-
-#################################################
-dplyr::arrange(genotypic_homo_fisher, Comparison)
