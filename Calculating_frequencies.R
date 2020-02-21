@@ -33,11 +33,20 @@ if (!require(readxl, quietly=TRUE)) {
       library(readxl)
 }
 
+####################
+## Start Analysis ##
+####################
+
+# set work directory
+dir <- getwd()
+setwd(dir = dir)
+# get date
+now <- as.Date(date(), format = "%a %b %d %H:%M:%S %Y")
+
 # create excel workbook
 wb <- openxlsx::createWorkbook()
 
-dir <- file.path("C:/Users/stanfordk/Documents/NSCF_work/Sizanani-Analysis/")
-setwd(dir = dir)
+
 # save input files into vector
 in_files <- list.files(dir, pattern = "[0-9].txt")
 
@@ -64,7 +73,7 @@ for (inFile in in_files){
   #test$Position
   test <- test[order(match(test$Position,names(cd14))),]
 
-  # replace ":" in names with "_"
+  # replace ":" in names with "."
   colnames(test) <- str_replace_all(colnames(test), ":", ".")
   colnames(test) <- str_pad(colnames(test), side = "left", pad = "x", width = 12)
   #test <- test %>% mutate_all(as.character)
@@ -342,7 +351,7 @@ for (inFile in in_files){
   }
 
 }
-saveWorkbook(wb, "Gene_frequencies_05-08-19.xlsx", overwrite = T)
+saveWorkbook(wb, paste("Gene_frequencies", now, "xlsx", sep = "."), overwrite = T)
 
 
 ##################################################################################################
