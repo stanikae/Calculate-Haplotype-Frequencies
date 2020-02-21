@@ -342,7 +342,7 @@ for (inFile in in_files){
   }
 
 }
-saveWorkbook(wb, "Gene_frequencies.xlsx", overwrite = T)
+saveWorkbook(wb, "Gene_frequencies_05-08-19.xlsx", overwrite = T)
 
 
 ##################################################################################################
