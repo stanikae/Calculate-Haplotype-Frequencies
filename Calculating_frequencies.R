@@ -92,6 +92,7 @@ for (inFile in in_files){
   # get genotypic and allelic frequencies
   cmb_genotype_freq <- list()
   cmb_allele_freq <- list()
+  # get genotypic and allelic frequencies for each group
 
   # genotype fishers test
   contigency_table <- data.frame()
@@ -108,6 +109,9 @@ for (inFile in in_files){
 
   allele_list <- list()
   #pos <- "x9.117705818"
+  # group genotypic frequencies
+  sample_groups <- unique(full_data$Group)
+  
   for (pos in positions){
     print(pos)
     #}
@@ -117,6 +121,23 @@ for (inFile in in_files){
     total_num$Ratio <- round(total_num$Frequency/sum(total_num$Frequency), 3)
     total_num$Percent <- round(total_num$Ratio * 100, 1)
     total_num$Position <- rep(pos, nrow(total_num))
+    
+    # group genotypic frequencies
+    #sample_groups <- unique(full_data$Group)
+    #grp_freq_list <- list()
+    for (grp in sample_groups){
+      print(grp)
+      grp_data <- full_data %>% filter(Group == grp)
+      grp_freq <- plyr::count(grp_data[,pos])
+      names(grp_freq) <- c("Genotype", "Frequency")
+      grp_freq$Ratio <- round(grp_freq$Frequency/sum(grp_freq$Frequency), 3)
+      grp_freq$Percent <- round(grp_freq$Ratio * 100, 1)
+      #grp_freq$Position <- rep(pos, nrow(grp_freq))
+      names(grp_freq)[1:4] <- c(paste(grp,"Genotype", sep = "_"), paste(grp,"Frequency", sep = "_"),
+                                paste(grp,"Ratio", sep = "_"), paste(grp,"Percent", sep = "_"))
+      #grp_freq_list[[grp]] <- grp_freq
+      total_num <- dplyr::full_join(total_num, grp_freq, by = c("Genotype" = paste(grp,"Genotype", sep = "_")))
+    }
     
     # allelic frequencies
     wildtype <- test[, pos][2] #test$`5:140631730`[2]
@@ -140,7 +161,7 @@ for (inFile in in_files){
       }
     }
     
-    total_num <- total_num %>% select(Position, GenotypeGroup, 1:4)
+    total_num <- total_num %>% select(Position, GenotypeGroup, everything()) #1:4)
     
     ref_len <- str_length(wildtype)
     alt_len <- str_length(mutant)
@@ -175,7 +196,50 @@ for (inFile in in_files){
     
     allelic$Position <- rep(pos, nrow(allelic))
     allelic$AlleleType <- names(c(ref=wildtype, mut=mutant))
-    allelic <- allelic %>% select(Position, AlleleType, 1:4)
+    
+    # group allelic frequencies
+    ################################### FOR GROUPS #############################
+    for (grp in sample_groups){
+      print(grp)
+      grp_data <- as.data.frame(full_data %>% filter(Group == grp))
+      ref_len <- str_length(wildtype)
+      alt_len <- str_length(mutant)
+      
+      wildtype_freq <- as.numeric()
+      mutant_freq <- as.numeric()
+      
+      test3 <- vector()
+      
+      if (ref_len > 1){
+        test3 <- str_replace_all(grp_data[, pos], wildtype, "Z")
+        ref <- "Z"
+        wildtype_freq <- sum(str_count(test3, ref))
+      } else {
+        test3 <- grp_data[, pos]
+        wildtype_freq <- sum(str_count(test3, wildtype))
+      }
+      
+      
+      if (alt_len > 1){
+        test3 <- str_replace_all(grp_data[, pos], mutant, "Z")
+        alt <- "Z"
+        mutant_freq <- sum(str_count(test3, alt))
+      } else {
+        test3 <- grp_data[, pos]
+        mutant_freq <- sum(str_count(test3, mutant))
+      }
+      #grp_freq <- plyr::count(grp_data[,pos])
+      grp_freq <- data.frame(Allele = c(wildtype, mutant), A.Frequency = c(wildtype_freq, mutant_freq))
+      grp_freq$Ratio <- round(grp_freq$A.Frequency/(2 * sum(grp_freq$A.Frequency)), 3)
+      grp_freq$Percent <- round(grp_freq$Ratio * 100, 1)
+      names(grp_freq) <- c(paste(grp,"Allele", sep = "_"), paste(grp,"A.Frequency", sep = "_"),
+                                paste(grp,"Ratio", sep = "_"), paste(grp,"Percent", sep = "_"))
+      #grp_freq_list[[grp]] <- grp_freq
+      allelic <- dplyr::full_join(allelic, grp_freq, by = c("Allele" = paste(grp,"Allele", sep = "_")))
+    }
+    ################################### END ANALYSIS FOR GROUPS #############################
+    
+    allelic <- allelic %>% select(Position, AlleleType, everything())#1:4)
     #sum(allelic$A.Frequency)
     # get all the genotypic freqs in a list
     cmb_genotype_freq[[pos]] <- total_num
