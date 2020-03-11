@@ -36,6 +36,7 @@ if (!require(readxl, quietly=TRUE)) {
 ####################
 ## Start Analysis ##
 ####################
+# 5:140633177
 
 # set work directory
 dir <- getwd()
@@ -48,17 +49,17 @@ wb <- openxlsx::createWorkbook()
 
 
 # save input files into vector
-in_files <- list.files(dir, pattern = "[0-9].txt")
+in_files <- list.files(paste(dir, "input-files", sep = "/"), pattern = ".txt")#"[0-9].txt")
 
 for (inFile in in_files){
   sheetName <- str_remove(inFile, "\\.txt")
   print(sheetName)
 
-  cd14 <- read_delim(paste(dir,inFile, sep = "/"), delim = "\t", 
+  cd14 <- read_delim(paste(dir, "input-files",inFile, sep = "/"), delim = "\t", 
                    col_types = cols(.default = "c")) 
 
   # import annotation data
-  groupData <- read_delim(paste(dir,"Groups_data.txt", sep = "/"), delim = "\t", col_names = F,
+  groupData <- read_delim(paste(paste(dir,"sample-metadata", sep = "/"),"Groups_data.txt", sep = "/"), delim = "\t", col_names = F,
                         col_types = cols(.default = "c"))
   colnames(groupData) <- c("Sample", "Group")
 
@@ -115,6 +116,8 @@ for (inFile in in_files){
   for (pos in positions){
     print(pos)
     #}
+    #pos="x5.140633688"
+    #pos="x5.140633177"
     # Genotypic frequencies
     total_num <- plyr::count(test2[,pos])
     names(total_num) <- c("Genotype", "Frequency")
@@ -232,10 +235,14 @@ for (inFile in in_files){
       grp_freq <- data.frame(Allele = c(wildtype, mutant), A.Frequency = c(wildtype_freq, mutant_freq))
       grp_freq$Ratio <- round(grp_freq$A.Frequency/(2 * sum(grp_freq$A.Frequency)), 3)
       grp_freq$Percent <- round(grp_freq$Ratio * 100, 1)
+      grp_freq$AlleleType <- names(c(ref=wildtype, mut=mutant))
       names(grp_freq) <- c(paste(grp,"Allele", sep = "_"), paste(grp,"A.Frequency", sep = "_"),
-                                paste(grp,"Ratio", sep = "_"), paste(grp,"Percent", sep = "_"))
+                                paste(grp,"Ratio", sep = "_"), paste(grp,"Percent", sep = "_"),
+                           "AlleleType")
       #grp_freq_list[[grp]] <- grp_freq
-      allelic <- dplyr::full_join(allelic, grp_freq, by = c("Allele" = paste(grp,"Allele", sep = "_")))
+      #allelic <- dplyr::full_join(allelic, grp_freq, by = c("Allele" = paste(grp,"Allele", sep = "_")))
+      allelic <- dplyr::full_join(allelic, grp_freq, by = "AlleleType")
+      grp_freq <- select(grp_freq, -AlleleType)
     }
     ################################### END ANALYSIS FOR GROUPS #############################
     
@@ -415,7 +422,7 @@ for (inFile in in_files){
   }
 
 }
-saveWorkbook(wb, paste("Gene_frequencies", now, "xlsx", sep = "."), overwrite = T)
+saveWorkbook(wb, paste(dir, "Results", paste("Gene_frequencies", now, "xlsx", sep = "."), sep = "/"), overwrite = T)
 
 
 ##################################################################################################
