@@ -35,3 +35,9 @@ if (!require(readxl, quietly=TRUE)) {
   install.packages("readxl")
   library(readxl)
 }
+
+# create input files directory
+in_dir <- path("..", "input-files")
+if (! dir_exists(in_dir)){
+  dir_create(in_dir)
+}
