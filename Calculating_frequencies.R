@@ -1,37 +1,6 @@
 # install/ load packages
-if (!require(plyr, quietly=TRUE)) {
-  install.packages("plyr")
-  library(plyr)
-}
-if (!require(tidyverse, quietly=TRUE)) {
-  install.packages("tidyverse")
-  library(tidyverse)
-}
-if (!require(tidyr, quietly=TRUE)) {
-  install.packages("tidyr")
-  library(tidyr)
-}
-if (!require(dplyr, quietly=TRUE)) {
-  install.packages("dplyr")
-  library(dplyr)
-}
-if (!require(purrr, quietly=TRUE)) {
-  install.packages("purrr")
-  library(purrr)
-}
-if (!require(stringr, quietly=TRUE)) {
-  install.packages("stringr")
-  library(stringr)
-}
-if (!require(openxlsx, quietly=TRUE)) {
-    install.packages("openxlsx")
-    library(openxlsx)
-}
-  
-if (!require(readxl, quietly=TRUE)) {
-      install.packages("readxl")
-      library(readxl)
-}
+path <- getwd()
+source(paste(path, "install_packages.R", sep = "/"))
 
 ####################
 ## Start Analysis ##
@@ -49,7 +18,7 @@ wb <- openxlsx::createWorkbook()
 
 
 # save input files into vector
-in_files <- list.files(paste(dir, "input-files", sep = "/"), pattern = ".txt")#"[0-9].txt")
+in_files <- list.files(paste(dir, "../input-files", sep = "/"), pattern = ".txt")#"[0-9].txt")
 
 for (inFile in in_files){
   sheetName <- str_remove(inFile, "\\.txt")
@@ -422,7 +391,13 @@ for (inFile in in_files){
   }
 
 }
-saveWorkbook(wb, paste(dir, "Results", paste("Gene_frequencies", now, "xlsx", sep = "."), sep = "/"), overwrite = T)
+# create output directory
+out_dir <- path("..", "Results")
+if (! dir_exists(out_dir)){
+  dir_create(out_dir)
+}
+
+saveWorkbook(wb, paste(out_dir, paste("Gene_frequencies", now, "xlsx", sep = "."), sep = "/"), overwrite = T)
 
 
 ##################################################################################################
