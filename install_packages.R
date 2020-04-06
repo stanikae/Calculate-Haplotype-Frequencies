@@ -41,3 +41,8 @@ in_dir <- path("..", "input-files")
 if (! dir_exists(in_dir)){
   dir_create(in_dir)
 }
+# create meta-data directory
+meta_dir <- path("..", "sample-metadata")
+if (! dir_exists(meta_dir)){
+  dir_create(meta_dir)
+}

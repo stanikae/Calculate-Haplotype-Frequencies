@@ -16,19 +16,24 @@ now <- as.Date(date(), format = "%a %b %d %H:%M:%S %Y")
 # create excel workbook
 wb <- openxlsx::createWorkbook()
 
+# meta-data directory and file
+meta_dir <- path("..", "sample-metadata")
+meta_file <- list.files(meta_dir, pattern = ".txt")
 
 # save input files into vector
-in_files <- list.files(paste(dir, "../input-files", sep = "/"), pattern = ".txt")#"[0-9].txt")
+in_dir <- path("..", "input-files")
+#in_files <- list.files(paste(dir, "../input-files", sep = "/"), pattern = ".txt")#"[0-9].txt")
+in_files <- list.files(in_dir, pattern = ".txt")
 
 for (inFile in in_files){
   sheetName <- str_remove(inFile, "\\.txt")
   print(sheetName)
 
-  cd14 <- read_delim(paste(dir, "input-files",inFile, sep = "/"), delim = "\t", 
+  cd14 <- read_delim(paste(in_dir,inFile, sep = "/"), delim = "\t", 
                    col_types = cols(.default = "c")) 
 
   # import annotation data
-  groupData <- read_delim(paste(paste(dir,"sample-metadata", sep = "/"),"Groups_data.txt", sep = "/"), delim = "\t", col_names = F,
+  groupData <- read_delim(paste(meta_dir,meta_file, sep = "/"), delim = "\t", col_names = F,
                         col_types = cols(.default = "c"))
   colnames(groupData) <- c("Sample", "Group")
 
