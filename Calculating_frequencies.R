@@ -88,7 +88,7 @@ for (inFile in in_files){
   sample_groups <- unique(full_data$Group)
   
   for (pos in positions){
-    print(pos)
+    #print(pos)
     #}
     #pos="x5.140633688"
     #pos="x5.140633177"
@@ -103,7 +103,7 @@ for (inFile in in_files){
     #sample_groups <- unique(full_data$Group)
     #grp_freq_list <- list()
     for (grp in sample_groups){
-      print(grp)
+      #print(grp)
       grp_data <- full_data %>% filter(Group == grp)
       grp_freq <- plyr::count(grp_data[,pos])
       names(grp_freq) <- c("Genotype", "Frequency")
@@ -127,7 +127,7 @@ for (inFile in in_files){
     mut_homo <- paste0(mutant,mutant)
     
     for (gen in seq_along(total_num$Genotype)){
-      print(total_num$Genotype[gen]) 
+      #print(total_num$Genotype[gen]) 
       
       if (str_detect(total_num$Genotype[gen], paste0("^",ref_homo,"$"))){
         total_num$GenotypeGroup[gen] <- "ref_homo"
@@ -177,7 +177,7 @@ for (inFile in in_files){
     # group allelic frequencies
     ################################### FOR GROUPS #############################
     for (grp in sample_groups){
-      print(grp)
+      #print(grp)
       grp_data <- as.data.frame(full_data %>% filter(Group == grp))
       ref_len <- str_length(wildtype)
       alt_len <- str_length(mutant)
@@ -247,8 +247,11 @@ for (inFile in in_files){
     fisher_alleles$Group <- NULL
     
     # reorder alleles, ref, mut
-    fisher_alleles_cols <- c(wildtype, mutant)
-    fisher_alleles <- fisher_alleles[,fisher_alleles_cols]
+    if (ncol(fisher_alleles) != 1){
+      #cat("hello","\n")
+      fisher_alleles_cols <- c(wildtype, mutant)
+      fisher_alleles <- fisher_alleles[,fisher_alleles_cols]
+    }
     
     # select the groups to compare
     
@@ -277,11 +280,12 @@ for (inFile in in_files){
         allele_mat2 <- matrix(allele_mat, nrow = 2, dimnames = list(Group = rownames(allele_mat),
                                                                        Allele = colnames(allele_mat)))
         # change order of alleles to begin with mutant
-        allele_mat2 <- allele_mat2[,c(mutant, wildtype)]
-        
-        
-        allele_mat2[is.na(allele_mat2)] <- 0
-        allele_fisher_test <- fisher.test(allele_mat2, alternative = "two.sided")
+        if (ncol(allele_mat2) != 1){
+          allele_mat2 <- allele_mat2[,c(mutant, wildtype)]
+          allele_mat2[is.na(allele_mat2)] <- 0
+          allele_fisher_test <- fisher.test(allele_mat2, 
+                                            alternative = "two.sided")
+        }
         
         allele_df <- data.frame(Position = pos, Comparison = sam_comp,
                               P_value = round(allele_fisher_test$p.value, 4), 
@@ -395,6 +399,7 @@ for (inFile in in_files){
     current_row <- current_row + nrow(df_list[[i]]) + 3
   }
 
+  cat("Finished processing gene:",sheetName,"\n")
 }
 # create output directory
 out_dir <- path("..", "Results")
