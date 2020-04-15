@@ -5,9 +5,10 @@ This script calculates allelic and genotypic frequencies, as well as perform Fis
 
 ### A. SET-UP
 1. (On a Windows Computer) In your Documents folder, create folder were you will be working from.
-``
+````
 Rename the folder to: Haplotype-Frequencies
-``		
+
+````		
 2. Open RStudio
 
 3. Go to File --> New Project... --> Version control --> Git
