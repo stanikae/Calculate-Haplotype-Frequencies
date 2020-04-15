@@ -12,11 +12,13 @@ This script calculates allelic and genotypic frequencies, as well as perform Fis
 #### 3. Go to File --> New Project... --> Version control --> Git
 
 #### 4. In the tab under Repository URL: paste the following link
-		https://github.com/stanikae/Calculate-Haplotype-Frequencies.git
-
+````
+https://github.com/stanikae/Calculate-Haplotype-Frequencies.git
+````
 #### 5. Check to see that in the tab under "Create project as subdirectory of:" there is
-		~/Documents/Haplotype-Frequencies
-		
+``
+~/Documents/Haplotype-Frequencies
+``		
 #### 6. Click "Create Project"
 		# This will begin copy the scripts from my GitHub
 		
